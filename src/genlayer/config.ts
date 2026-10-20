@@ -1,0 +1,2 @@
+export const network={name:'Studionet',key:'studionet',chainId:Number(import.meta.env.VITE_GENLAYER_CHAIN_ID||61999),rpc:import.meta.env.VITE_GENLAYER_RPC_URL||'https://studio.genlayer.com/api',contract:(import.meta.env.VITE_GENLAYER_CONTRACT_ADDRESS||'') as `0x${string}`,explorer:import.meta.env.VITE_GENLAYER_EXPLORER_URL||''};
+export const isConfigured=/^0x[a-fA-F0-9]{40}$/.test(network.contract);

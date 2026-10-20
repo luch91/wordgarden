@@ -14,7 +14,7 @@ This repository uses the same verified compatibility and architecture decisions 
 
 ## Live proof
 
-- `WordGardenRegistry` Checkpoint-A proof source passes the linter's AST safety checks. The linter's local semantic-validation process stalled and must still be repaired/rerun.
+- The production `WordGardenRegistry` passes AST and semantic validation. Root cause of the earlier stall: `genvm-lint` attempted a latest-release network lookup before using the valid cached artifact. Explicitly selecting cached artifact `v0.2.16` allowed the full semantic validator to complete (5 methods: 4 view, 1 write).
 - Studionet contract: `0x9dC00297585A855107B0A9B43ba344a3DC0081EA`.
 - Deployment transaction: `0x7026591c23dabc03bfd3f836091c5ab12c9981b7c37321ed9f921c837771c19b`.
 - Deployment result: `FINALIZED`, `MAJORITY_AGREE`, execution `SUCCESS`, all five validators agreed.
