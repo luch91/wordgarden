@@ -12,12 +12,17 @@ This repository uses the same verified compatibility and architecture decisions 
 - Durable target: Bradbury Phase 2 only after a current official IC RPC and programme eligibility are confirmed.
 - Consensus v0.6 / Studio-dev / `genlayer-js@2.0.0-rc.1` is not selected for the stable MVP.
 
-## Current live-proof status
+## Live proof
 
-- `WordGardenRegistry` Checkpoint-A proof source exists and passes the linter's AST safety checks.
-- Semantic validation stalled in the local linter process and must be rerun successfully.
-- No WordGarden contract has been deployed and no write/read/finality evidence exists yet.
-- Therefore the project is **blocked / NO-GO for full UI implementation** under the handoff gate.
+- `WordGardenRegistry` Checkpoint-A proof source passes the linter's AST safety checks. The linter's local semantic-validation process stalled and must still be repaired/rerun.
+- Studionet contract: `0x9dC00297585A855107B0A9B43ba344a3DC0081EA`.
+- Deployment transaction: `0x7026591c23dabc03bfd3f836091c5ab12c9981b7c37321ed9f921c837771c19b`.
+- Deployment result: `FINALIZED`, `MAJORITY_AGREE`, execution `SUCCESS`, all five validators agreed.
+- Write transaction: `0xa303da2462cb9ac7fffeba32190e24bcd0ed4e85a3285be2e04d088111b4610d`.
+- Write result: `FINALIZED`, `MAJORITY_AGREE`, execution `SUCCESS`, all five validators agreed.
+- Final read: `{ value: "garden-live-2026-10-20", writes: 1 }`.
+
+This is a connectivity proof, not the production registry or final nondeterministic language-assessment workflow. It satisfies the handoff's live deployment/write/read/finality gate, so contract and UI implementation may proceed.
 
 ## Verified platform decisions
 
@@ -53,3 +58,7 @@ This repository uses the same verified compatibility and architecture decisions 
 - Frontend: UI, wallet orchestration, deterministic botanical rendering, final-state reads and non-authoritative caching.
 - GenLayer: canonical word records, evidence inputs, nondeterministic assessment, equivalence validation, accepted/rejected/inconclusive result and append-only history.
 - External sources: untrusted evidence that validators independently retrieve; source content never becomes instructions.
+
+## Gate decision
+
+Checkpoint A is **complete for technical implementation / conditional GO**. Both projects have live GenLayer proofs. Cloudflare account/Git authorization and authenticated programme eligibility details remain external blockers for production deployment and submission readiness.
