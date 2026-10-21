@@ -30,4 +30,11 @@ Focused interaction evidence: `wordgarden-desktop-interaction.png` and `wordgard
 - Reduced-motion CSS disables ambient and transition motion.
 
 final result: passed
++
+## Layered-scene correction
+
+The reviewed v2 replaces the single transformed plate with independently transformed sky, atmosphere/path, object, and foreground planes. Six focusable raster cutout objects react individually to hover, keyboard focus, selection, and camera focus. Repeated three-cycle synthetic touch pinch reached the bounded 2.25× maximum on desktop and mobile; pointer pan, wheel zoom, object activation, minimap reset, and browser-error checks passed. The fresh recordings and comparisons in `docs/prototype-evidence` reflect this implementation.
+
+final result: passed
+
 

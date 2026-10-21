@@ -1287,7 +1287,7 @@ header {
 .plant-sprite {
   position: absolute;
   inset: 0;
-  background: url("/garden-specimens.png") no-repeat;
+  background: url("/garden-specimens.webp") no-repeat;
   background-size: 300% 200%;
   pointer-events: none;
 }

@@ -62,7 +62,7 @@ export function GardenWorld({
       });
     });
   function down(e: React.PointerEvent) {
-    stage.current?.setPointerCapture(e.pointerId);
+    try { stage.current?.setPointerCapture(e.pointerId); } catch { /* synthetic touch */ }
     pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     g.current = { cx: cam.x, cy: cam.y, x: e.clientX, y: e.clientY, d: 0 };
     setHint(false);
