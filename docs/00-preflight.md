@@ -9,8 +9,9 @@ This repository uses the same verified compatibility and architecture decisions 
 - Exact frontend SDK target: `genlayer-js@1.1.8`.
 - GenVM runner: `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`.
 - Minimal proof target: Studionet (`61999`, `https://studio.genlayer.com/api`).
-- Durable target: Bradbury Phase 2 only after a current official IC RPC and programme eligibility are confirmed.
+- Active target: StudioNet. Bradbury Phase 2 is unavailable during Epoch Zero and will require a fresh deployment after explicit builder access opens.
 - Consensus v0.6 / Studio-dev / `genlayer-js@2.0.0-rc.1` is not selected for the stable MVP.
+- Asimov is retired. Pre-reset Bradbury endpoints are historical only. A future migration must separately verify the Chain RPC and Intelligent Contract node RPC, chain ID `4221`, and the official Phase 2 genesis hash.
 
 ## Live proof
 
