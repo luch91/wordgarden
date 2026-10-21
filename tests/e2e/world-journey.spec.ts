@@ -3,6 +3,10 @@ import { expect, test } from "@playwright/test";
 test("verified word journey and botanical discoveries work", async ({
   page,
 }) => {
+  test.skip(
+    !process.env.E2E_LIVE_RECORDS,
+    "requires the deployed authoritative registry",
+  );
   await page.goto("/");
   const specimen = page.getByRole("button", { name: /ubuntu.*documented/i });
   await expect(specimen).toBeVisible({ timeout: 30000 });
