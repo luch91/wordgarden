@@ -83,7 +83,7 @@ export function GardenWorld({
     <section className="garden-world">
       <div className="garden-heading">
         <span>A BOTANICAL MUSEUM OF LANGUAGE</span>
-        <h1>Wander until a word finds you.</h1>
+        <h1>Every word carries a world. Wander until one finds you.</h1>
       </div>
       <div
         ref={stage}
