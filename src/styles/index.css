@@ -1233,7 +1233,6 @@ header {
     transition: none !important;
   }
 }
-+
 /* Gate A layered botanical scene v2 */
 .layered-garden .garden-stage {
   background: #4d7453;
@@ -1384,5 +1383,95 @@ header {
   .garden-object-plane {
     transition: none !important;
     animation: none !important;
+  }
+}
+/* Experiential correction */
+.layered-garden .garden-heading {
+  max-width: min(430px, 34vw);
+  pointer-events: none;
+}
+.layered-garden .garden-heading h1 {
+  font-size: clamp(2.15rem, 3.65vw, 3.75rem);
+  line-height: 0.94;
+}
+.layered-garden .specimen-card {
+  position: absolute;
+  right: 5rem;
+  bottom: 1.5rem;
+  padding: 1.25rem;
+  color: #17362a;
+  max-width: 400px;
+  max-height: min(62vh, 560px);
+  overflow: auto;
+  z-index: 30;
+  background: rgba(255, 250, 232, 0.96);
+  backdrop-filter: blur(14px);
+}
+.specimen-card blockquote {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid #e87562;
+  font-family: Georgia, serif;
+}
+.journal-context {
+  font-size: 0.86rem;
+}
+.specimen-card a {
+  display: inline-flex;
+  margin-top: 0.7rem;
+  color: #fff;
+  background: #274c3b;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+}
+.live-garden-map span {
+  transform: none !important;
+  translate: 0 0 !important;
+}
+.plant-object::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 28px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(65, 91, 50, 0.48);
+  filter: blur(7px);
+  z-index: -1;
+}
+.word-specimen::after {
+  background: #ffe681;
+  box-shadow: 0 0 20px #fff3a1;
+}
+.garden-paths::after {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(255, 240, 192, 0.18) 72%,
+    transparent
+  );
+}
+@media (max-width: 700px) {
+  .layered-garden .garden-heading {
+    max-width: 72%;
+    top: 1rem;
+  }
+  .layered-garden .garden-heading h1 {
+    font-size: clamp(1.7rem, 8vw, 2.6rem);
+  }
+  .layered-garden .specimen-card {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 5.8rem;
+    max-width: none;
+    max-height: 44vh;
+  }
+  .garden-proof {
+    display: none;
   }
 }

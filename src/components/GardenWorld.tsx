@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Focus, Leaf, Minus, Plus, Route as PathIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import type { WordEntry } from "../types";
 type Cam = { x: number; y: number; scale: number };
 const WORLD = { w: 1800, h: 1050 },
@@ -13,6 +13,44 @@ const beds = [
   ["Memory", 570, 790, 4],
   ["Kinship", 1120, 790, 5],
 ] as const;
+const notes = [
+  {
+    title: "Meaning",
+    kind: "Botanical note · interpretation",
+    body: "Meanings grow through use, situation and community. This bed invites close reading rather than a single universal definition.",
+    signal: "A prism garden",
+  },
+  {
+    title: "Origins",
+    kind: "Botanical note · movement",
+    body: "Words travel between places, generations and languages. Etymology can trace movement without reducing a living word to one root.",
+    signal: "A migrating bloom",
+  },
+  {
+    title: "Relationships",
+    kind: "Botanical note · connection",
+    body: "Words gain texture from the expressions beside them: contrasts, metaphors, forms of address and shared references.",
+    signal: "A climbing vine",
+  },
+  {
+    title: "Culture",
+    kind: "Botanical note · context",
+    body: "Cultural context explains when language belongs, how it is used and why a literal gloss may be incomplete.",
+    signal: "A many-seasoned bed",
+  },
+  {
+    title: "Memory",
+    kind: "Botanical note · transmission",
+    body: "Language can carry stories through speech, ritual and family memory even when online documentation is limited.",
+    signal: "A seed bank of voices",
+  },
+  {
+    title: "Kinship",
+    kind: "Botanical note · belonging",
+    body: "Terms of relationship can express responsibility, affection and belonging in ways that resist one-to-one translation.",
+    signal: "Interwoven roots",
+  },
+];
 export function GardenWorld({
   entries,
   loading,
@@ -22,13 +60,23 @@ export function GardenWorld({
   loading: boolean;
   error: string;
 }) {
-  const nav = useNavigate(),
-    stage = useRef<HTMLDivElement>(null),
+  const stage = useRef<HTMLDivElement>(null),
     pts = useRef(new Map<number, { x: number; y: number }>()),
     g = useRef({ cx: 0, cy: 0, x: 0, y: 0, d: 0 });
   const [cam, setCam] = useState<Cam>({ x: 0, y: 0, scale: 1 }),
     [sel, setSel] = useState(""),
-    [hint, setHint] = useState(true);
+    [hint, setHint] = useState(true),
+    [view, setView] = useState({ w: 1, h: 1 });
+  useEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const update = () => setView({ w: el.clientWidth, h: el.clientHeight });
+    update();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const accepted = entries.filter((e) => e.assessment_status === "ACCEPTED"),
     entry = accepted.find((e) => e.id === sel),
     specimens = useMemo(
@@ -62,7 +110,11 @@ export function GardenWorld({
       });
     });
   function down(e: React.PointerEvent) {
-    try { stage.current?.setPointerCapture(e.pointerId); } catch { /* synthetic touch */ }
+    try {
+      stage.current?.setPointerCapture(e.pointerId);
+    } catch {
+      /* synthetic touch */
+    }
     pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     g.current = { cx: cam.x, cy: cam.y, x: e.clientX, y: e.clientY, d: 0 };
     setHint(false);
@@ -90,16 +142,18 @@ export function GardenWorld({
   function up(e: React.PointerEvent) {
     pts.current.delete(e.pointerId);
     g.current.d = 0;
+    const remaining = [...pts.current.values()][0];
+    if (remaining)
+      g.current = {
+        cx: cam.x,
+        cy: cam.y,
+        x: remaining.x,
+        y: remaining.y,
+        d: 0,
+      };
   }
-  const focus = (x: number, y: number, id: string) => {
+  const focus = (_x: number, _y: number, id: string) => {
       setSel(id);
-      setCam(
-        bound({
-          scale: 1.5,
-          x: (WORLD.w / 2 - x) * 1.5,
-          y: (WORLD.h / 2 - y) * 1.5,
-        }),
-      );
     },
     tr = (d: number) =>
       `translate3d(${cam.x * d}px,${cam.y * d}px,0) scale(${1 + (cam.scale - 1) * d})`;
@@ -127,6 +181,7 @@ export function GardenWorld({
             setCam((c) => bound({ ...c, x: c.x - d }));
           if (e.key === "ArrowUp") setCam((c) => bound({ ...c, y: c.y + d }));
           if (e.key === "ArrowDown") setCam((c) => bound({ ...c, y: c.y - d }));
+          if (e.key === "Escape") setSel("");
         }}
       >
         <div
@@ -218,9 +273,10 @@ export function GardenWorld({
           ))}
           <span
             style={{
-              width: `${Math.min(92, 100 / cam.scale)}%`,
-              height: `${Math.min(88, 100 / cam.scale)}%`,
-              transform: `translate(calc(-50% + ${-cam.x / 18}px),calc(-50% + ${-cam.y / 14}px))`,
+              width: `${clamp((view.w / (WORLD.w * cam.scale)) * 100, 4, 100)}%`,
+              height: `${clamp((view.h / (WORLD.h * cam.scale)) * 100, 4, 100)}%`,
+              left: `${clamp(((WORLD.w / 2 - view.w / (2 * cam.scale) - cam.x / cam.scale) / WORLD.w) * 100, 0, 100)}%`,
+              top: `${clamp(((WORLD.h / 2 - view.h / (2 * cam.scale) - cam.y / cam.scale) / WORLD.h) * 100, 0, 100)}%`,
             }}
           />
         </button>
@@ -237,19 +293,45 @@ export function GardenWorld({
             <small>Only labelled specimens are finalised records.</small>
           </div>
         </div>
-        {entry && (
-          <article className="specimen-card">
+        {(entry || sel.startsWith("d")) && (
+          <article
+            className="specimen-card discovery-panel"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <button onClick={() => setSel("")} aria-label="Close specimen">
               ×
             </button>
-            <span>
-              {entry.language_name} · {entry.documentation_level}
-            </span>
-            <h2>{entry.word}</h2>
-            <p>{entry.definition}</p>
-            <button onClick={() => nav(`/word/${entry.id}`)}>
-              Open field journal →
-            </button>
+            {entry ? (
+              <>
+                <span>
+                  {entry.language_name} · {entry.documentation_level}{" "}
+                  documentation · {entry.assessment_status}
+                </span>
+                <h2>{entry.word}</h2>
+                <p>{entry.definition}</p>
+                <blockquote>“{entry.usage_example}”</blockquote>
+                <p className="journal-context">{entry.cultural_context}</p>
+                <Link
+                  to={`/plant/${entry.id}`}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  Open field journal →
+                </Link>
+              </>
+            ) : (
+              (() => {
+                const n = notes[Number(sel.slice(1))];
+                return (
+                  <>
+                    <span>{n.kind}</span>
+                    <h2>{n.title}</h2>
+                    <p>{n.body}</p>
+                    <small>{n.signal}</small>
+                    <Link to="/collections">Follow this garden path →</Link>
+                  </>
+                );
+              })()
+            )}
           </article>
         )}
       </div>
