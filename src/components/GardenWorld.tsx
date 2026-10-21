@@ -2,14 +2,17 @@ import { useMemo, useRef, useState } from "react";
 import { Focus, Leaf, Minus, Plus, Route as PathIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { WordEntry } from "../types";
+type Cam = { x: number; y: number; scale: number };
+const WORLD = { w: 1800, h: 1050 },
+  clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n));
 const beds = [
-  { name: "Meaning", x: 24, y: 55, note: "Decorative discovery bed" },
-  { name: "Origins", x: 72, y: 31, note: "Decorative garden terrace" },
-  { name: "Relationships", x: 79, y: 62, note: "Decorative specimen path" },
-  { name: "Culture", x: 48, y: 22, note: "Decorative conservatory" },
-];
-const clamp = (n: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, n));
+  ["Meaning", 350, 620, 0],
+  ["Origins", 1370, 350, 1],
+  ["Relationships", 1390, 720, 2],
+  ["Culture", 900, 250, 3],
+  ["Memory", 570, 790, 4],
+  ["Kinship", 1120, 790, 5],
+] as const;
 export function GardenWorld({
   entries,
   loading,
@@ -19,68 +22,89 @@ export function GardenWorld({
   loading: boolean;
   error: string;
 }) {
-  const navigate = useNavigate(),
+  const nav = useNavigate(),
     stage = useRef<HTMLDivElement>(null),
-    points = useRef(new Map<number, { x: number; y: number }>()),
-    drag = useRef({ x: 0, y: 0, cx: 0, cy: 0, d: 0 });
-  const [cam, setCam] = useState({ x: 0, y: 0, scale: 1 }),
-    [selected, setSelected] = useState(""),
+    pts = useRef(new Map<number, { x: number; y: number }>()),
+    g = useRef({ cx: 0, cy: 0, x: 0, y: 0, d: 0 });
+  const [cam, setCam] = useState<Cam>({ x: 0, y: 0, scale: 1 }),
+    [sel, setSel] = useState(""),
     [hint, setHint] = useState(true);
   const accepted = entries.filter((e) => e.assessment_status === "ACCEPTED"),
-    entry = accepted.find((e) => e.id === selected);
-  const specimens = useMemo(
-    () =>
-      accepted.map((entry, i) => ({
-        entry,
-        x: 24 + (i % 4) * 16,
-        y: 57 + (i % 2) * 9,
-      })),
-    [accepted],
-  );
-  const scale = (n: number) =>
-    setCam((c) => ({ ...c, scale: clamp(n, 0.86, 2.25) }));
+    entry = accepted.find((e) => e.id === sel),
+    specimens = useMemo(
+      () =>
+        accepted.map((entry, i) => ({
+          entry,
+          x: 760 + (i % 4) * 210,
+          y: 570 + Math.floor(i / 4) * 180,
+          s: i % 6,
+        })),
+      [accepted],
+    );
+  const bound = (c: Cam) => {
+    const r = stage.current?.getBoundingClientRect();
+    if (!r) return c;
+    const mx = Math.max(0, (WORLD.w * c.scale - r.width) / 2),
+      my = Math.max(0, (WORLD.h * c.scale - r.height) / 2);
+    return { ...c, x: clamp(c.x, -mx, mx), y: clamp(c.y, -my, my) };
+  };
+  const zoom = (z: number, x: number, y: number) =>
+    setCam((c) => {
+      const r = stage.current?.getBoundingClientRect();
+      if (!r) return c;
+      const s = clamp(z, 0.72, 2.25),
+        px = x - r.left - r.width / 2,
+        py = y - r.top - r.height / 2;
+      return bound({
+        scale: s,
+        x: px - ((px - c.x) * s) / c.scale,
+        y: py - ((py - c.y) * s) / c.scale,
+      });
+    });
   function down(e: React.PointerEvent) {
     stage.current?.setPointerCapture(e.pointerId);
-    points.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    drag.current = { x: e.clientX, y: e.clientY, cx: cam.x, cy: cam.y, d: 0 };
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    g.current = { cx: cam.x, cy: cam.y, x: e.clientX, y: e.clientY, d: 0 };
     setHint(false);
   }
   function move(e: React.PointerEvent) {
-    if (!points.current.has(e.pointerId)) return;
-    points.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const p = [...points.current.values()];
+    if (!pts.current.has(e.pointerId)) return;
+    pts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const p = [...pts.current.values()];
     if (p.length === 2) {
-      const d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y);
-      if (drag.current.d) scale((cam.scale * d) / drag.current.d);
-      drag.current.d = d;
+      const d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y),
+        x = (p[0].x + p[1].x) / 2,
+        y = (p[0].y + p[1].y) / 2;
+      if (g.current.d) zoom((cam.scale * d) / g.current.d, x, y);
+      g.current.d = d;
       return;
     }
-    setCam((c) => ({
-      ...c,
-      x: clamp(drag.current.cx + e.clientX - drag.current.x, -520, 520),
-      y: clamp(drag.current.cy + e.clientY - drag.current.y, -230, 230),
-    }));
+    setCam((c) =>
+      bound({
+        ...c,
+        x: g.current.cx + e.clientX - g.current.x,
+        y: g.current.cy + e.clientY - g.current.y,
+      }),
+    );
   }
   function up(e: React.PointerEvent) {
-    points.current.delete(e.pointerId);
-    drag.current.d = 0;
+    pts.current.delete(e.pointerId);
+    g.current.d = 0;
   }
-  function focus(x: number, y: number, id = "") {
-    setSelected(id);
-    setCam({ x: (50 - x) * 7, y: (48 - y) * 4, scale: 1.42 });
-    setHint(false);
-  }
-  function keys(e: React.KeyboardEvent) {
-    const d = 30;
-    if (e.key === "ArrowLeft") setCam((c) => ({ ...c, x: c.x + d }));
-    if (e.key === "ArrowRight") setCam((c) => ({ ...c, x: c.x - d }));
-    if (e.key === "ArrowUp") setCam((c) => ({ ...c, y: c.y + d }));
-    if (e.key === "ArrowDown") setCam((c) => ({ ...c, y: c.y - d }));
-    if (e.key === "+" || e.key === "=") scale(cam.scale + 0.14);
-    if (e.key === "-") scale(cam.scale - 0.14);
-  }
+  const focus = (x: number, y: number, id: string) => {
+      setSel(id);
+      setCam(
+        bound({
+          scale: 1.5,
+          x: (WORLD.w / 2 - x) * 1.5,
+          y: (WORLD.h / 2 - y) * 1.5,
+        }),
+      );
+    },
+    tr = (d: number) =>
+      `translate3d(${cam.x * d}px,${cam.y * d}px,0) scale(${1 + (cam.scale - 1) * d})`;
   return (
-    <section className="garden-world">
+    <section className="garden-world layered-garden">
       <div className="garden-heading">
         <span>A BOTANICAL MUSEUM OF LANGUAGE</span>
         <h1>Every word carries a world. Wander until one finds you.</h1>
@@ -89,69 +113,86 @@ export function GardenWorld({
         ref={stage}
         className="garden-stage"
         tabIndex={0}
-        onKeyDown={keys}
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
         onPointerCancel={up}
-        onWheel={(e) => {
-          e.preventDefault();
-          scale(cam.scale + (e.deltaY < 0 ? 0.12 : -0.12));
-          setHint(false);
+        onWheel={(e) =>
+          zoom(cam.scale + (e.deltaY < 0 ? 0.12 : -0.12), e.clientX, e.clientY)
+        }
+        onKeyDown={(e) => {
+          const d = 50;
+          if (e.key === "ArrowLeft") setCam((c) => bound({ ...c, x: c.x + d }));
+          if (e.key === "ArrowRight")
+            setCam((c) => bound({ ...c, x: c.x - d }));
+          if (e.key === "ArrowUp") setCam((c) => bound({ ...c, y: c.y + d }));
+          if (e.key === "ArrowDown") setCam((c) => bound({ ...c, y: c.y - d }));
         }}
       >
         <div
-          className="garden-scene"
+          className="garden-depth garden-sky"
+          style={{ transform: tr(0.12) }}
+        />
+        <div
+          className="garden-depth garden-paths"
+          style={{ transform: tr(0.35) }}
+        />
+        <div
+          className="garden-scene garden-object-plane"
           style={{
+            width: WORLD.w,
+            height: WORLD.h,
             transform: `translate3d(${cam.x}px,${cam.y}px,0) scale(${cam.scale})`,
           }}
         >
-          <img
-            src="/garden-world.jpg"
-            draggable={false}
-            alt="A luminous conservatory with winding paths, bridges and flowering terraces"
-          />
-          <div className="garden-light" aria-hidden="true" />
-          {beds.map((b, i) => (
+          {beds.map(([name, x, y, s], i) => (
             <button
-              className={`bed-marker bed-${i}`}
-              key={b.name}
-              style={{ left: `${b.x}%`, top: `${b.y}%` }}
+              key={name}
+              className={`plant-object decorative-plant ${sel === `d${i}` ? "is-selected" : ""}`}
+              style={{ left: x, top: y }}
               onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => focus(b.x, b.y)}
+              onClick={() => focus(x, y, `d${i}`)}
             >
-              <span>{b.name}</span>
-              <small>{b.note}</small>
+              <i className={`plant-sprite plant-${s}`} />
+              <span>{name}</span>
+              <small>Decorative collection</small>
             </button>
           ))}
-          {specimens.map(({ entry, x, y }) => (
+          {specimens.map(({ entry, x, y, s }) => (
             <button
-              className="word-specimen"
               key={entry.id}
-              style={{
-                left: `${x}%`,
-                top: `${y}%`,
-                filter: `hue-rotate(${(parseInt(entry.id.slice(0, 3), 16) % 50) - 25}deg)`,
-              }}
+              className={`plant-object word-specimen ${sel === entry.id ? "is-selected" : ""}`}
+              style={{ left: x, top: y }}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => focus(x, y, entry.id)}
             >
-              <i />
+              <i className={`plant-sprite plant-${s}`} />
               <span>{entry.word}</span>
-              <small>{entry.language_name} · documented specimen</small>
+              <small>{entry.language_name} · documented</small>
             </button>
           ))}
         </div>
+        <div
+          className="garden-depth garden-foreground"
+          style={{ transform: tr(1.12) }}
+        />
         {hint && (
           <div className="garden-hint">
-            <PathIcon /> Drag the paths · scroll or pinch to wander
+            <PathIcon />
+            Drag · zoom at pointer · pinch
           </div>
         )}
         <div className="garden-controls">
-          <button onClick={() => scale(cam.scale + 0.16)} aria-label="Zoom in">
+          <button
+            onClick={(e) => zoom(cam.scale + 0.18, e.clientX, e.clientY)}
+            aria-label="Zoom in"
+          >
             <Plus />
           </button>
-          <button onClick={() => scale(cam.scale - 0.16)} aria-label="Zoom out">
+          <button
+            onClick={(e) => zoom(cam.scale - 0.18, e.clientX, e.clientY)}
+            aria-label="Zoom out"
+          >
             <Minus />
           </button>
           <button
@@ -162,14 +203,24 @@ export function GardenWorld({
           </button>
         </div>
         <button
-          className="garden-map"
+          className="garden-map live-garden-map"
           onClick={() => setCam({ x: 0, y: 0, scale: 1 })}
           aria-label="Reset garden camera"
         >
-          <img src="/garden-world.jpg" alt="" />
+          {beds.map((o) => (
+            <i
+              key={o[0]}
+              style={{
+                left: `${(o[1] / WORLD.w) * 100}%`,
+                top: `${(o[2] / WORLD.h) * 100}%`,
+              }}
+            />
+          ))}
           <span
             style={{
-              transform: `translate(${-cam.x / 18}px,${-cam.y / 14}px) scale(${1 / cam.scale})`,
+              width: `${Math.min(92, 100 / cam.scale)}%`,
+              height: `${Math.min(88, 100 / cam.scale)}%`,
+              transform: `translate(calc(-50% + ${-cam.x / 18}px),calc(-50% + ${-cam.y / 14}px))`,
             }}
           />
         </button>
@@ -178,26 +229,25 @@ export function GardenWorld({
           <div>
             <strong>
               {loading
-                ? "Listening to the roots…"
+                ? "Reading garden…"
                 : error
-                  ? "The registry path is quiet"
-                  : `${accepted.length} documented ${accepted.length === 1 ? "word" : "words"}`}
+                  ? "Garden signal interrupted"
+                  : `${accepted.length} documented words`}
             </strong>
             <small>Only labelled specimens are finalised records.</small>
           </div>
         </div>
         {entry && (
-          <article className="specimen-popover">
-            <button onClick={() => setSelected("")} aria-label="Close specimen">
+          <article className="specimen-card">
+            <button onClick={() => setSel("")} aria-label="Close specimen">
               ×
             </button>
             <span>
               {entry.language_name} · {entry.documentation_level}
             </span>
             <h2>{entry.word}</h2>
-            <blockquote>“{entry.definition}”</blockquote>
-            <p>{entry.cultural_context}</p>
-            <button onClick={() => navigate(`/plant/${entry.id}`)}>
+            <p>{entry.definition}</p>
+            <button onClick={() => nav(`/word/${entry.id}`)}>
               Open field journal →
             </button>
           </article>

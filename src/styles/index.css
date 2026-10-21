@@ -129,7 +129,8 @@ nav a.active {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   overflow: hidden;
-  background: radial-gradient(circle at 80% 30%, #e8def5 0, transparent 35%),
+  background:
+    radial-gradient(circle at 80% 30%, #e8def5 0, transparent 35%),
     linear-gradient(130deg, #fbf5ec, #f4eadc);
   padding: clamp(3rem, 8vw, 7rem) clamp(1rem, 7vw, 7rem);
 }
@@ -1230,5 +1231,158 @@ header {
   .specimen-popover {
     animation: none !important;
     transition: none !important;
+  }
+}
++
+/* Gate A layered botanical scene v2 */
+.layered-garden .garden-stage {
+  background: #4d7453;
+  overflow: hidden;
+}
+.garden-depth {
+  position: absolute;
+  inset: -12%;
+  width: 124%;
+  height: 124%;
+  pointer-events: none;
+  transform-origin: center;
+  transition: transform 0.12s linear;
+}
+.garden-sky {
+  background: url("/garden-world.jpg") center/cover;
+  filter: blur(3px) saturate(0.65) brightness(0.55);
+}
+.garden-paths {
+  background: radial-gradient(
+    ellipse at 50% 75%,
+    rgba(255, 236, 192, 0.4),
+    transparent 48%
+  );
+  mix-blend-mode: screen;
+}
+.garden-object-plane {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -900px;
+  margin-top: -525px;
+  transform-origin: center;
+  transition: transform 0.12s linear;
+}
+.plant-object {
+  position: absolute;
+  width: 245px;
+  height: 330px;
+  transform: translate(-50%, -50%);
+  border: 0;
+  background: none;
+  color: #172d25;
+  cursor: pointer;
+  filter: drop-shadow(0 25px 20px rgba(28, 45, 30, 0.4));
+  transition:
+    filter 0.35s,
+    translate 0.35s,
+    scale 0.35s;
+}
+.plant-sprite {
+  position: absolute;
+  inset: 0;
+  background: url("/garden-specimens.png") no-repeat;
+  background-size: 300% 200%;
+  pointer-events: none;
+}
+.plant-0 {
+  background-position: 0 0 !important;
+}
+.plant-1 {
+  background-position: 50% 0 !important;
+}
+.plant-2 {
+  background-position: 100% 0 !important;
+}
+.plant-3 {
+  background-position: 0 100% !important;
+}
+.plant-4 {
+  background-position: 50% 100% !important;
+}
+.plant-5 {
+  background-position: 100% 100% !important;
+}
+.plant-object span,
+.plant-object small {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  white-space: nowrap;
+  background: rgba(255, 248, 228, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 0.42rem 0.8rem;
+  box-shadow: 0 8px 25px rgba(37, 45, 25, 0.25);
+}
+.plant-object span {
+  bottom: 18px;
+  font: 600 1.05rem Georgia;
+}
+.plant-object small {
+  bottom: -14px;
+  font-size: 0.62rem;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.plant-object:hover,
+.plant-object:focus-visible,
+.plant-object.is-selected {
+  scale: 1.12;
+  translate: 0 -20px;
+  filter: drop-shadow(0 30px 22px rgba(28, 45, 30, 0.5))
+    drop-shadow(0 0 24px #fff0a4);
+}
+.plant-object:hover small,
+.plant-object:focus-visible small,
+.plant-object.is-selected small {
+  opacity: 1;
+}
+.word-specimen {
+  filter: drop-shadow(0 24px 22px #315d3d) drop-shadow(0 0 18px #fff5a3);
+}
+.garden-foreground {
+  background: linear-gradient(180deg, transparent 70%, rgba(53, 101, 56, 0.35));
+  filter: blur(10px);
+}
+.live-garden-map {
+  background: rgba(248, 239, 205, 0.9) !important;
+}
+.live-garden-map i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d35d72;
+  box-shadow: 0 0 7px white;
+}
+.live-garden-map span {
+  position: absolute !important;
+  left: 50%;
+  top: 50%;
+  border: 1px solid #32583b !important;
+  background: rgba(70, 123, 74, 0.12) !important;
+}
+@media (max-width: 600px) {
+  .plant-object {
+    width: 190px;
+    height: 255px;
+  }
+  .garden-object-plane {
+    scale: 0.8;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plant-object,
+  .garden-depth,
+  .garden-object-plane {
+    transition: none !important;
+    animation: none !important;
   }
 }
