@@ -1,0 +1,2 @@
+import {render,screen} from '@testing-library/react';import {describe,expect,it} from 'vitest';import {Plant} from '../../src/components/Plant';
+describe('Plant',()=>{it('exposes a textual description',()=>{render(<Plant id="1" word="ubuntu" language="isiXhosa"/>);expect(screen.getByRole('img')).toHaveAccessibleName(/ubuntu.*isiXhosa/i)});it('can be decorative',()=>{const {container}=render(<Plant id="1" word="x" language="y" decorative/>);expect(container.querySelector('svg')).toHaveAttribute('aria-hidden','true')})});

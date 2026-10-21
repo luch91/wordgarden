@@ -1,0 +1,2 @@
+import {describe,expect,it} from 'vitest';import {hashSeed,plantTraits} from '../../src/lib/plant';
+describe('deterministic botanical system',()=>{it('returns identical traits for identical records',()=>{expect(plantTraits('abc','Yorùbá','Àṣẹ')).toEqual(plantTraits('abc','Yorùbá','Àṣẹ'))});it('changes without cultural inference',()=>{expect(hashSeed('one')===hashSeed('two')).toBe(false);expect(Object.keys(plantTraits('x'))).toEqual(['stem','petal','accent','height','petals','lean','leaves'])})});
