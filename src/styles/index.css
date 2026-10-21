@@ -1441,7 +1441,7 @@ header {
   filter: blur(7px);
   z-index: -1;
 }
-.word-specimen::after {
+.record-specimen::after {
   background: #ffe681;
   box-shadow: 0 0 20px #fff3a1;
 }

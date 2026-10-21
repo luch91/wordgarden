@@ -8,7 +8,9 @@ test("verified word journey and botanical discoveries work", async ({
     "requires the deployed authoritative registry",
   );
   await page.goto("/");
-  const specimen = page.getByRole("button", { name: /ubuntu.*documented/i });
+  const specimen = page
+    .locator(".record-specimen")
+    .filter({ hasText: "ubuntu" });
   await expect(specimen).toBeVisible({ timeout: 30000 });
   const scene = page.locator(".garden-object-plane");
   const before = await scene.getAttribute("style");

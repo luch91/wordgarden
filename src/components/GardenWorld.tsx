@@ -216,7 +216,7 @@ export function GardenWorld({
           {specimens.map(({ entry, x, y, s }) => (
             <button
               key={entry.id}
-              className={`plant-object word-specimen ${sel === entry.id ? "is-selected" : ""}`}
+              className={`plant-object record-specimen ${sel === entry.id ? "is-selected" : ""}`}
               style={{ left: x, top: y }}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => focus(x, y, entry.id)}
