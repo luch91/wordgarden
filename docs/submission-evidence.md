@@ -12,7 +12,7 @@ Status: **technically ready for owner review; official submission not authorised
 - Finalised accepted assessment: `0xa9da5abcabfd673ca761ad9ce8c4dc5bbcabf44a41c4ded25332e0f6ebaaf1a1`
 - Successful read: `list_entries(0, 25, false)` returned the persisted `ubuntu` record with `SUPPORTED` documentation.
 - Independent validation: the final receipt contains three `AGREE` and two `DISAGREE` validator votes. Earlier over-strict versions produced two `MAJORITY_DISAGREE` outcomes and no state write.
-- Production deployment: `29d5b5cb-e48a-4c7f-8255-9064ee64782b`, commit `f2a3026daca30d9bd96bdfdf6f05d36853fc4a48` (a dependency/security QA deployment will supersede this after its passing PR merges).
+- Verified production QA snapshot: deployment `baa15d2a-5f54-495d-9218-d6275478fa11`, commit `8ed53d8dc100536d59f3ac6574722a9772cbba77` (the final documentation merge may produce a newer deployment, reported in the delivery summary).
 - Production browser evidence: Chrome at 1440, 768, 375 and 320 widths; canonical/detail/collections routes, keyboard navigation, direct refresh and responsive overflow checks.
 
-Eligibility: the official configuration permits StudioNet for new projects and the Projects category allows two submissions per Monday–Sunday UTC week. Account-specific remaining capacity requires an authenticated portal session. No official submission is authorised.
+Programme operations: the Projects category allows at most two submissions per Monday–Sunday UTC week, resetting Monday 00:00 UTC. Existing deployments remain subject to evidence and review. Account-specific remaining capacity requires an authenticated portal session, and steward/AI review still applies. No official submission is authorised.

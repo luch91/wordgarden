@@ -3,6 +3,7 @@ import {studionet} from 'genlayer-js/chains';
 import {ExecutionResult,TransactionStatus} from 'genlayer-js/types';
 import type {EntryPage,Submission,WordEntry} from '../types';
 import {isConfigured,network} from './config';
+import {feeError,prepareFees} from './fees';
 
 type Provider={request(args:{method:string;params?:unknown[]}):Promise<unknown>};
 declare global {interface Window {ethereum?:Provider}}
@@ -21,9 +22,10 @@ export async function submitEntry(payload:Submission,onHash:(hash:string)=>void)
  if(!window.ethereum)throw new Error('No compatible browser wallet was found.'); const accounts=await window.ethereum.request({method:'eth_requestAccounts'}) as string[];const account=accounts[0] as `0x${string}`;
  const client=createClient({chain:studionet,endpoint:network.rpc,account,provider:window.ethereum});await client.connect('studionet');
  const call={address:requireContract(),functionName:'submit_entry',args:[`json:${JSON.stringify(payload)}`],value:0n};
- const hash=await client.writeContract(call);onHash(hash);
+ try{const fees=await prepareFees(client as unknown as Parameters<typeof prepareFees>[0],window.ethereum,account,call,network.chainId);
+ const hash=await client.writeContract({...call,...(fees?{fees}:{})} as Parameters<typeof client.writeContract>[0]);onHash(hash);
  const tx=await client.waitForTransactionReceipt({hash,status:TransactionStatus.FINALIZED});
  if(tx.txExecutionResultName!==ExecutionResult.FINISHED_WITH_RETURN)throw new Error(`Transaction finalized without a successful contract execution (${tx.txExecutionResultName}).`);
  const possible=(tx as unknown as {result?:unknown;returnData?:unknown}).result??(tx as unknown as {returnData?:unknown}).returnData;
- return {hash,entryId:typeof possible==='string'?possible:undefined};
+ return {hash,entryId:typeof possible==='string'?possible:undefined};}catch(error){throw feeError(error)}
 }
